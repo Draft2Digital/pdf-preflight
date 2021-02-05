@@ -31,3 +31,9 @@ class InfoSpecifiesTrapping(Rule):
 
         if len(issues) != 0:
             return issues
+
+    @classmethod
+    def fix(cls, pdf):
+        # if Trapped is missing or is not set to either True or False,
+        # give the pdf a Trapped value of False
+        super().fix(pdf)

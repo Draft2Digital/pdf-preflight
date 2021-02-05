@@ -1,6 +1,6 @@
+import io
 import itertools
 import traceback
-
 import pikepdf
 
 from pdf_preflight.issue import Issue
@@ -50,6 +50,19 @@ class Profile:
         return issues, exceptions
 
     @classmethod
+    def run_preflight_checks_and_fix_issues(cls, file):
+        with pikepdf.open(file) as pdf:
+            for row in cls.rules:
+                rule = row[0]
+                args = row[1:]
+                i, e = cls._run_rule(rule, pdf, *args)
+                if i:
+                    rule.fix(pdf)
+            fixed_pdf = io.BytesIO()
+            pdf.save(fixed_pdf)
+        return fixed_pdf
+
+    @classmethod
     def _run_rule(cls, rule, pdf, *args):
         issues = []
         exceptions = []
@@ -66,7 +79,7 @@ class Profile:
     def _combine_similar_issues(cls, issues):
         combined_issues = []
         key = lambda i: (i.rule, i.desc)
-        for k, g in itertools.groupby(sorted(issues, key=key), key=key):
+        for k, g in itertools.groupby(sorted(issues or [], key=key), key=key):
             g = list(g)
             first = g[0]
             last = g[len(g) - 1]

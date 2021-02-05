@@ -26,3 +26,11 @@ class InfoHasKeys(Rule):
 
         if len(issues) != 0:
             return issues
+
+    @classmethod
+    def fix(cls, pdf):
+        # for each key that is missing,
+        #   find out the requirements for it and its appropriate value,
+        #   generate them,
+        #   and add them to the PDF
+        super().fix(pdf)

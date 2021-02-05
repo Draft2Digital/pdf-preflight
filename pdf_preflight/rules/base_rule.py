@@ -6,14 +6,15 @@ class Rule:
 
     @classmethod
     def check(cls, pdf):
-        issues = []
-
-        issues.append(Issue(
+        issues = [Issue(
             page=0,
             rule=cls.name,
             desc=("Every subclass of Rule must define its own 'check()' method,"
-                  "which should return a list of Issues (or None if no issues were found)")
-        ))
+                  "which should return a list of Issues (or None if no issues were found)"),
+            fixable=False
+        )]
+        return issues
 
-        if len(issues) != 0:
-            return issues
+    @classmethod
+    def fix(cls, pdf):
+        raise Exception(f"Violations of the Rule '{cls.name}' cannot reasonably be automatically fixed at this time.")

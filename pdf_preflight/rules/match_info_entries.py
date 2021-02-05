@@ -34,3 +34,11 @@ class MatchInfoEntries(Rule):
 
         if len(issues) != 0:
             return issues
+
+    @classmethod
+    def fix(cls, pdf):
+        # for each key or key-value that is missing,
+        #   find out the requirements for the key and its appropriate value,
+        #   generate whatever part of them is missing,
+        #   and add that to the PDF
+        super().fix(pdf)

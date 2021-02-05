@@ -34,3 +34,15 @@ class PdfxOutputIntentHasKeys(Rule):
 
         if len(issues) != 0:
             return issues
+
+    @classmethod
+    def fix(cls, pdf):
+        # for each key that is missing,
+        #   find out the requirements for it and its appropriate value,
+        #   generate them,
+        #   and add them to the PDF
+        # in this test, we are not bothered by the possibility of there being multiple OutputIntents,
+        #   we simply add any missing keys to all of them and let the Other Rule do the freaking out if necessary
+        #   (in an ideal case, either the Other Rule runs first and catches any possible duplicates before we get here,
+        #   or the profile we're running under doesn't give a flip how many copies we have)
+        super().fix(pdf)
