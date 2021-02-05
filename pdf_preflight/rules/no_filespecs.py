@@ -1,4 +1,4 @@
-from decimal import Decimal
+import pikepdf
 
 from pdf_preflight.issue import Issue
 from .base_rule import Rule
@@ -27,9 +27,7 @@ class NoFilespecs(Rule):
     @classmethod
     def _has_filespecs(cls, pdf):
         for obj in pdf.objects:
-            if (not isinstance(obj, str) and
-                    not isinstance(obj, int) and
-                    not isinstance(obj, Decimal) and
-                    not isinstance(obj, list)):
-                if "/Type" in obj.keys() and obj["/Type"] == "/Filespec":
+            if obj is not None and isinstance(obj, pikepdf.objects.Object):
+                obj = dict(obj)
+                if obj.get("/Type") == "/Filespec":
                     return True

@@ -14,7 +14,7 @@ class TestPdfPreflight(unittest.TestCase):
         filename = os.path.join(pdf_folder, "pdfa-1a.pdf")
         self.assertEqual(None, profiles.Pdfa1a.check_preflight(filename))
 
-        filename = os.path.join(pdf_folder, "FancyFontPDF.pdf")
+        filename = os.path.join(pdf_folder, "standard_14_font.pdf")
         with self.assertRaisesRegex(Exception, "^PDF failed Preflight checks.*") as cm:
             profiles.Pdfa1a.check_preflight(filename)
         expected_exception = ("PDF failed Preflight checks with the following Issues & exceptions:\n"
