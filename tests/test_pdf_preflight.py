@@ -298,15 +298,6 @@ class TestPdfPreflight(unittest.TestCase):
             self.assertEqual("OnlyEmbeddedFonts", issue.rule)
             self.assertEqual("All fonts must be embedded; found non-embedded font.", issue.desc)
 
-        # fail a file with fancy fonts that aren't embedded
-        filename = os.path.join(pdf_folder, "FancyFontPDF.pdf")
-        with pikepdf.open(filename) as pdf:
-            issues = rules.OnlyEmbeddedFonts.check(pdf)
-            issue = issues[0]
-            self.assertEqual(1, issue.page)
-            self.assertEqual("OnlyEmbeddedFonts", issue.rule)
-            self.assertEqual("All fonts must be embedded; found non-embedded font.", issue.desc)
-
     def test_rule__output_intent_for_pdfx(self):
         filename = os.path.join(pdf_folder, "pdfx-1a-subsetting.pdf")
         with pikepdf.open(filename) as pdf:

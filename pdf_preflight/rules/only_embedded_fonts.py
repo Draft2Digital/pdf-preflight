@@ -16,8 +16,9 @@ class OnlyEmbeddedFonts(Rule):
 
             fonts = cls._get_fonts_for_page(page)
             if fonts:
-                for key in fonts:
-                    if not cls._is_embedded(fonts[key]):
+                for f in fonts:
+                    font = fonts[f]
+                    if not cls._is_embedded(font):
                         issues.append(Issue(
                             page=page_number,
                             rule=cls.name,
@@ -37,17 +38,15 @@ class OnlyEmbeddedFonts(Rule):
 
     @classmethod
     def _is_embedded(cls, font):
-        if font["/Subtype"] == "Type3":
+        if font.get("/Subtype") == "/Type3":
             return True
-        elif "/FontDescriptor" in font.keys():
-            descriptor = dict(font["/FontDescriptor"])
-            if ("/FontFile" in descriptor.keys() or
-                    "/FontFile2" in descriptor.keys() or
-                    "/FontFile3" in descriptor.keys()):
+        elif font.get("/FontDescriptor"):
+            descriptor = font["/FontDescriptor"]
+            if descriptor and ("/FontFile" in descriptor or "/FontFile2" in descriptor or "/FontFile3" in descriptor):
                 return True
-        elif font["/Subtype"] == "Type0":
-            descendants = dict(font["/DescendantFonts"])
-            for key in descendants:
-                return cls._is_embedded(descendants[key])
+        elif font.get("/Subtype") == "/Type0":
+            descendants = font["/DescendantFonts"]
+            for d in descendants:
+                return cls._is_embedded(d)
         else:
             return False
