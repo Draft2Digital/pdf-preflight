@@ -17,7 +17,7 @@ class Pdfx1a(Profile):
         [rules.NoTransparency],
         [rules.OnlyEmbeddedFonts],
         [rules.OutputIntentForPdfx],
-        [rules.PdfxOutputIntentHasKeys],
+        [rules.PdfxOutputIntentHasKeys, ["/OutputConditionIdentifier", "/Info"]],
         [rules.PrintBoxes],
         [rules.RootHasKeys, ["/OutputIntents"]],
     ]

@@ -51,7 +51,8 @@ class TestPdfPreflight(unittest.TestCase):
                               "Rule 'OutputIntentForPdfx' found an error in document metadata: "
                               "OutputIntent with subtype '/GTS_PDFX' is required but was not found.\n"
                               "Rule 'PdfxOutputIntentHasKeys' found an error in document metadata: "
-                              "GTS_PDFX OutputIntent not found, assumed to be missing all required keys '[]'.\n"
+                              "GTS_PDFX OutputIntent not found, assumed to be missing all required keys "
+                              "'['/OutputConditionIdentifier', '/Info']'.\n"
                               "Rule 'PrintBoxes' found an error on page 1-100: "
                               "ArtBox or TrimBox is required, but neither was found; TrimBox is preferred.\n"
                               "Rule 'RootHasKeys' found an error in document metadata: "
@@ -84,7 +85,8 @@ class TestPdfPreflight(unittest.TestCase):
                               "Rule 'OutputIntentForPdfx' found an error in document metadata: "
                               "OutputIntent with subtype '/GTS_PDFX' is required but was not found.\n"
                               "Rule 'PdfxOutputIntentHasKeys' found an error in document metadata: "
-                              "GTS_PDFX OutputIntent not found, assumed to be missing all required keys '[]'.\n"
+                              "GTS_PDFX OutputIntent not found, assumed to be missing all required keys "
+                              "'['/OutputConditionIdentifier', '/Info']'.\n"
                               "Rule 'PrintBoxes' found an error on page 1-100: "
                               "ArtBox or TrimBox is required, but neither was found; TrimBox is preferred.\n"
                               "Rule 'RootHasKeys' found an error in document metadata: "
@@ -331,7 +333,7 @@ class TestPdfPreflight(unittest.TestCase):
     def test_rule__pdfx_output_intent_has_keys(self):
         filename = os.path.join(pdf_folder, "pdfx-1a-subsetting.pdf")
         with pikepdf.open(filename) as pdf:
-            entries = ["/Info"]
+            entries = ["/OutputConditionIdentifier", "/Info"]
             issues = rules.PdfxOutputIntentHasKeys.check(pdf, entries)
             self.assertEqual(None, issues)
 

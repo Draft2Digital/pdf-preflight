@@ -35,11 +35,9 @@ class CompressionAlgorithms(Rule):
 
         all_algorithms = []
         for obj in pdf.objects:
-            if (not isinstance(obj, str) and
-                    not isinstance(obj, int) and
-                    not isinstance(obj, Decimal) and
-                    not isinstance(obj, list)):
-                if "/Filter" in obj.keys():
+            if obj is not None and isinstance(obj, pikepdf.objects.Object):
+                obj = dict(obj)
+                if "/Filter" in obj:
                     result = obj["/Filter"]
                     if isinstance(result, pikepdf.Name):  # we only found one
                         all_algorithms.append(str(result))
