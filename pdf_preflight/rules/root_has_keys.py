@@ -28,7 +28,7 @@ class RootHasKeys(Rule):
             return issues
 
     @classmethod
-    def fix(cls, pdf):
+    def fix(cls, pdf, entries=None):
         # for each key that is missing,
         #   find out the requirements for it and its appropriate value,
         #   generate them,

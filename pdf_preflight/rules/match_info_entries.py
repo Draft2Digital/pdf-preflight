@@ -36,7 +36,7 @@ class MatchInfoEntries(Rule):
             return issues
 
     @classmethod
-    def fix(cls, pdf):
+    def fix(cls, pdf, entries=None):
         # for each key or key-value that is missing,
         #   find out the requirements for the key and its appropriate value,
         #   generate whatever part of them is missing,

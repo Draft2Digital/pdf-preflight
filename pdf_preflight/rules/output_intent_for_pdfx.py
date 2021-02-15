@@ -39,6 +39,6 @@ class OutputIntentForPdfx(Rule):
         #   and add it to the pdf
         # else if there's too many of them,
         #   figure out whether the correct answer is to
-        #       (a) remove all of them from the pdf except the first one (although order in pdfs is fuzzy at best), or
+        #       (a) remove all of them from the pdf except one (which one? order in pdfs is fuzzy at best), or
         #       (b) Freak Out And Die (raise an exception) because We Can't Fix This
         super().fix(pdf)

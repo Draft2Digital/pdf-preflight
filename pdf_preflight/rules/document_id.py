@@ -25,7 +25,6 @@ class DocumentId(Rule):
     @classmethod
     def fix(cls, pdf):
         # if pdf doesn't have a document ID,
-        #   find out the requirements for one,
-        #   generate one,
+        #   generate a unique one (using the recommendations in PDFReference page 581?)
         #   and add it to the PDF
         super().fix(pdf)
