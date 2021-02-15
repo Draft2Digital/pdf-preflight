@@ -57,7 +57,7 @@ class Profile:
                 args = row[1:]
                 i, e = cls._run_rule(rule, pdf, *args)
                 if i:
-                    rule.fix(pdf)
+                    cls._fix_rule(rule, pdf, *args)
             fixed_pdf = io.BytesIO()
             pdf.save(fixed_pdf)
         return fixed_pdf
@@ -74,6 +74,10 @@ class Profile:
             exception_string = traceback.format_exc()
             exceptions.append(exception_string)
         return issues, exceptions
+
+    @classmethod
+    def _fix_rule(cls, rule, pdf, *args):
+        rule.fix(pdf, *args)
 
     @classmethod
     def _combine_similar_issues(cls, issues):

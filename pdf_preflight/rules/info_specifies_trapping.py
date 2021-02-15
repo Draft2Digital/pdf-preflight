@@ -34,6 +34,6 @@ class InfoSpecifiesTrapping(Rule):
 
     @classmethod
     def fix(cls, pdf):
-        # if Trapped is missing or is not set to either True or False,
-        # give the pdf a Trapped value of False
-        super().fix(pdf)
+        info = pdf.docinfo
+        if "/Trapped" not in info or (info["/Trapped"] != "/True" and info["/Trapped"] != "/False"):
+            info["/Trapped"] = "/False"
