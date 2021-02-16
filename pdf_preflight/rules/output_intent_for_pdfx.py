@@ -30,15 +30,3 @@ class OutputIntentForPdfx(Rule):
 
         if len(issues) != 0:
             return issues
-
-    @classmethod
-    def fix(cls, pdf):
-        # if the OutputIntent is missing,
-        #   find out its requirements,
-        #   generate it,
-        #   and add it to the pdf
-        # else if there's too many of them,
-        #   figure out whether the correct answer is to
-        #       (a) remove all of them from the pdf except one (which one? order in pdfs is fuzzy at best), or
-        #       (b) Freak Out And Die (raise an exception) because We Can't Fix This
-        super().fix(pdf)

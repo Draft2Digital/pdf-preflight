@@ -31,9 +31,3 @@ class InfoSpecifiesTrapping(Rule):
 
         if len(issues) != 0:
             return issues
-
-    @classmethod
-    def fix(cls, pdf):
-        info = pdf.docinfo
-        if "/Trapped" not in info or (info["/Trapped"] != "/True" and info["/Trapped"] != "/False"):
-            info["/Trapped"] = "/False"
