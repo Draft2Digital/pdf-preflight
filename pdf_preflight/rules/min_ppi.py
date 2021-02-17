@@ -21,8 +21,8 @@ class MinPpi(Rule):
         for i, page in enumerate(pdf.pages):
             page_number = i + 1
 
-            images = cls._get_all_images_on_page
-            image_matrices = cls._get_all_image_matrices_on_page
+            images = cls._get_all_images_on_page(page)
+            image_matrices = cls._get_all_image_matrices_on_page(page)
             for index in range(len(images)):
                 if cls._image_has_low_ppi(images[index], image_matrices[index], threshold):
                     issues.append(Issue(
