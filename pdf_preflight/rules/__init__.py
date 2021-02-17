@@ -5,6 +5,7 @@ from .info_has_keys import InfoHasKeys
 from .info_specifies_trapping import InfoSpecifiesTrapping
 from .match_info_entries import MatchInfoEntries
 from .max_version import MaxVersion
+from .min_ppi import MinPpi
 from .no_filespecs import NoFilespecs
 from .no_rgb import NoRgb
 from .no_transparency import NoTransparency
@@ -22,6 +23,7 @@ __all__ = [
     InfoSpecifiesTrapping,
     MatchInfoEntries,
     MaxVersion,
+    MinPpi,
     NoFilespecs,
     NoRgb,
     NoTransparency,

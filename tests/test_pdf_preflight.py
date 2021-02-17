@@ -231,6 +231,20 @@ class TestPdfPreflight(unittest.TestCase):
             self.assertEqual("MaxVersion", issue.rule)
             self.assertEqual("PDF version should be 1.3 or lower.", issue.desc)
 
+    def test_rule__min_ppi(self):
+        filename = os.path.join(pdf_folder, "300ppi.pdf")
+        with pikepdf.open(filename) as pdf:
+            issues = rules.MinPpi.check(pdf, 300)
+            self.assertEqual(None, issues)
+
+        filename = os.path.join(pdf_folder, "72ppi.pdf")
+        with pikepdf.open(filename) as pdf:
+            issues = rules.MinPpi.check(pdf, 300)
+            issue = issues[0]
+            self.assertEqual(1, issue.page)
+            self.assertEqual("MinPpi", issue.rule)
+            self.assertEqual("Found low-resolution image; images must be at least 300 ppi.", issue.desc)
+
     def test_rule__no_filespecs(self):
         filename = os.path.join(pdf_folder, "rgb.pdf")
         with pikepdf.open(filename) as pdf:
