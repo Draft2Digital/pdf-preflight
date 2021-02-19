@@ -207,6 +207,28 @@ class TestPdfPreflight(unittest.TestCase):
             self.assertEqual("MatchInfoEntries", issue.rule)
             self.assertEqual("Value of Info entry '/Creator' doesn't match regex 'Shrimp'", issue.desc)
 
+    def test_rule__max_ink_density(self):
+        # no cmyk colors specified
+        filename = os.path.join(pdf_folder, "rgb-hexagon.pdf")
+        with pikepdf.open(filename) as pdf:
+            issues = rules.MaxInkDensity.check(pdf, 100)
+            self.assertEqual(None, issues)
+
+        # cmyk ink density in file is at or below threshold
+        filename = os.path.join(pdf_folder, "cmyk.pdf")
+        with pikepdf.open(filename) as pdf:
+            issues = rules.MaxInkDensity.check(pdf, 400)
+            self.assertEqual(None, issues)
+
+        # cmyk ink density in file is above threshold
+        filename = os.path.join(pdf_folder, "cmyk.pdf")
+        with pikepdf.open(filename) as pdf:
+            issues = rules.MaxInkDensity.check(pdf, 240)
+            issue = issues[0]
+            self.assertEqual(5, issue.page)
+            self.assertEqual("MaxInkDensity", issue.rule)
+            self.assertEqual("CMYK ink density too high; must not exceed 240%", issue.desc)
+
     def test_rule__max_version(self):
         filename = os.path.join(pdf_folder, "version_1_3.pdf")
         with pikepdf.open(filename) as pdf:
@@ -258,6 +280,23 @@ class TestPdfPreflight(unittest.TestCase):
             self.assertEqual("Metadata", issue.page)
             self.assertEqual("NoFilespecs", issue.rule)
             self.assertEqual("Found one or more filespecs; use of filespecs to reference external files is prohibited.",
+                             issue.desc)
+
+    def test_rule__no_indexed_cmyk(self):
+        # pass a file with both indexed and non-indexed colorspaces that are not CMYK
+        filename = os.path.join(pdf_folder, "rgb.pdf")
+        with pikepdf.open(filename) as pdf:
+            issues = rules.NoIndexedCmyk.check(pdf)
+            self.assertEqual(None, issues)
+
+        # fail a file with indexed CMYK, ignoring its non-indexed CMYK colorspaces
+        filename = os.path.join(pdf_folder, "cmyk.pdf")
+        with pikepdf.open(filename) as pdf:
+            issues = rules.NoIndexedCmyk.check(pdf)
+            issue = issues[0]
+            self.assertEqual(7, issue.page)
+            self.assertEqual("NoIndexedCmyk", issue.rule)
+            self.assertEqual("Indexed CMYK colorspaces are prohibited but one or more were found.",
                              issue.desc)
 
     def test_rule__no_rgb(self):

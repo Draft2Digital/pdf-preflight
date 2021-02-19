@@ -4,9 +4,11 @@ from .document_id import DocumentId
 from .info_has_keys import InfoHasKeys
 from .info_specifies_trapping import InfoSpecifiesTrapping
 from .match_info_entries import MatchInfoEntries
+from .max_ink_density import MaxInkDensity
 from .max_version import MaxVersion
 from .min_ppi import MinPpi
 from .no_filespecs import NoFilespecs
+from .no_indexed_cmyk import NoIndexedCmyk
 from .no_rgb import NoRgb
 from .no_transparency import NoTransparency
 from .only_embedded_fonts import OnlyEmbeddedFonts
@@ -22,9 +24,11 @@ __all__ = [
     InfoHasKeys,
     InfoSpecifiesTrapping,
     MatchInfoEntries,
+    MaxInkDensity,
     MaxVersion,
     MinPpi,
     NoFilespecs,
+    NoIndexedCmyk,
     NoRgb,
     NoTransparency,
     OnlyEmbeddedFonts,
