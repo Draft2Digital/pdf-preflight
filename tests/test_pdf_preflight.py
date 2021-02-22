@@ -1,14 +1,15 @@
 import os
-import unittest
 import pikepdf
+import unittest
 
-import pdf_preflight.rules as rules
 import pdf_preflight.profiles as profiles
+import pdf_preflight.rules as rules
 
 pdf_folder = os.path.join(os.path.dirname(__file__), "pdfs")
 
 
-class TestPdfPreflight(unittest.TestCase):
+######################################################################
+class TestPdfPreflightProfiles(unittest.TestCase):
 
     def test_profile__pdfa1a(self):
         filename = os.path.join(pdf_folder, "pdfa-1a.pdf")
@@ -93,22 +94,9 @@ class TestPdfPreflight(unittest.TestCase):
                               "Root dict missing required key '/OutputIntents'\n")
         self.assertTrue(str(cm.exception).startswith(expected_exception))
 
-    ######################################################################
 
-    def test_rule__box_nesting(self):
-        filename = os.path.join(pdf_folder, "72ppi.pdf")
-        with pikepdf.open(filename) as pdf:
-            issues = rules.BoxNesting.check(pdf)
-            self.assertEqual(None, issues)
-
-        filename = os.path.join(pdf_folder, "bleedbox_larger_than_mediabox.pdf")
-        with pikepdf.open(filename) as pdf:
-            issues = rules.BoxNesting.check(pdf)
-            issue = issues[0]
-            self.assertEqual(1, issue.page)
-            self.assertEqual("BoxNesting", issue.rule)
-            self.assertEqual("BleedBox must be smaller than MediaBox", issue.desc)
-
+######################################################################
+class TestPdfPreflightRulesForMetadata(unittest.TestCase):
     def test_rule__compression_algorithms(self):
         filename = os.path.join(pdf_folder, "jbig2.pdf")
         with pikepdf.open(filename) as pdf:
@@ -207,28 +195,6 @@ class TestPdfPreflight(unittest.TestCase):
             self.assertEqual("MatchInfoEntries", issue.rule)
             self.assertEqual("Value of Info entry '/Creator' doesn't match regex 'Shrimp'", issue.desc)
 
-    def test_rule__max_ink_density(self):
-        # no cmyk colors specified
-        filename = os.path.join(pdf_folder, "rgb-hexagon.pdf")
-        with pikepdf.open(filename) as pdf:
-            issues = rules.MaxInkDensity.check(pdf, 100)
-            self.assertEqual(None, issues)
-
-        # cmyk ink density in file is at or below threshold
-        filename = os.path.join(pdf_folder, "cmyk.pdf")
-        with pikepdf.open(filename) as pdf:
-            issues = rules.MaxInkDensity.check(pdf, 400)
-            self.assertEqual(None, issues)
-
-        # cmyk ink density in file is above threshold
-        filename = os.path.join(pdf_folder, "cmyk.pdf")
-        with pikepdf.open(filename) as pdf:
-            issues = rules.MaxInkDensity.check(pdf, 240)
-            issue = issues[0]
-            self.assertEqual(5, issue.page)
-            self.assertEqual("MaxInkDensity", issue.rule)
-            self.assertEqual("CMYK ink density too high; must not exceed 240%", issue.desc)
-
     def test_rule__max_version(self):
         filename = os.path.join(pdf_folder, "version_1_3.pdf")
         with pikepdf.open(filename) as pdf:
@@ -253,20 +219,7 @@ class TestPdfPreflight(unittest.TestCase):
             self.assertEqual("MaxVersion", issue.rule)
             self.assertEqual("PDF version should be 1.3 or lower.", issue.desc)
 
-    def test_rule__min_ppi(self):
-        filename = os.path.join(pdf_folder, "300ppi.pdf")
-        with pikepdf.open(filename) as pdf:
-            issues = rules.MinPpi.check(pdf, 300)
-            self.assertEqual(None, issues)
-
-        filename = os.path.join(pdf_folder, "72ppi.pdf")
-        with pikepdf.open(filename) as pdf:
-            issues = rules.MinPpi.check(pdf, 300)
-            issue = issues[0]
-            self.assertEqual(1, issue.page)
-            self.assertEqual("MinPpi", issue.rule)
-            self.assertEqual("Found low-resolution image; images must be at least 300 ppi.", issue.desc)
-
+    # see if this one can be changed to be a page rule
     def test_rule__no_filespecs(self):
         filename = os.path.join(pdf_folder, "rgb.pdf")
         with pikepdf.open(filename) as pdf:
@@ -281,75 +234,6 @@ class TestPdfPreflight(unittest.TestCase):
             self.assertEqual("NoFilespecs", issue.rule)
             self.assertEqual("Found one or more filespecs; use of filespecs to reference external files is prohibited.",
                              issue.desc)
-
-    def test_rule__no_indexed_cmyk(self):
-        # pass a file with both indexed and non-indexed colorspaces that are not CMYK
-        filename = os.path.join(pdf_folder, "rgb.pdf")
-        with pikepdf.open(filename) as pdf:
-            issues = rules.NoIndexedCmyk.check(pdf)
-            self.assertEqual(None, issues)
-
-        # fail a file with indexed CMYK, ignoring its non-indexed CMYK colorspaces
-        filename = os.path.join(pdf_folder, "cmyk.pdf")
-        with pikepdf.open(filename) as pdf:
-            issues = rules.NoIndexedCmyk.check(pdf)
-            issue = issues[0]
-            self.assertEqual(7, issue.page)
-            self.assertEqual("NoIndexedCmyk", issue.rule)
-            self.assertEqual("Indexed CMYK colorspaces are prohibited but one or more were found.",
-                             issue.desc)
-
-    def test_rule__no_rgb(self):
-        filename = os.path.join(pdf_folder, "gray.pdf")
-        with pikepdf.open(filename) as pdf:
-            issues = rules.NoRgb.check(pdf)
-            self.assertEqual(None, issues)
-
-        filename = os.path.join(pdf_folder, "rgb.pdf")
-        with pikepdf.open(filename) as pdf:
-            issues = rules.NoRgb.check(pdf)
-            issue = issues[0]
-            self.assertEqual(1, issue.page)
-            self.assertEqual("NoRgb", issue.rule)
-            self.assertEqual("Found RGB colorspace; RGB objects are prohibited.",
-                             issue.desc)
-
-    def test_rule__no_transparency(self):
-        filename = os.path.join(pdf_folder, "gray.pdf")
-        with pikepdf.open(filename) as pdf:
-            issues = rules.NoTransparency.check(pdf)
-            self.assertEqual(None, issues)
-
-        filename = os.path.join(pdf_folder, "transparency.pdf")
-        with pikepdf.open(filename) as pdf:
-            issues = rules.NoTransparency.check(pdf)
-            issue = issues[0]
-            self.assertEqual(1, issue.page)
-            self.assertEqual("NoTransparency", issue.rule)
-            self.assertEqual("Found object with transparency; transparent objects are prohibited.",
-                             issue.desc)
-
-    def test_rule__only_embedded_fonts(self):
-        # pass a file with embedded fonts that don't have subsets
-        filename = os.path.join(pdf_folder, "pdfx-1a-no-subsetting.pdf")
-        with pikepdf.open(filename) as pdf:
-            issues = rules.OnlyEmbeddedFonts.check(pdf)
-            self.assertEqual(None, issues)
-
-        # pass a file with embedded fonts that do have subsets
-        filename = os.path.join(pdf_folder, "pdfx-1a-subsetting.pdf")
-        with pikepdf.open(filename) as pdf:
-            issues = rules.OnlyEmbeddedFonts.check(pdf)
-            self.assertEqual(None, issues)
-
-        # fail a file with a standard font that's not embedded
-        filename = os.path.join(pdf_folder, "standard_14_font.pdf")
-        with pikepdf.open(filename) as pdf:
-            issues = rules.OnlyEmbeddedFonts.check(pdf)
-            issue = issues[0]
-            self.assertEqual(1, issue.page)
-            self.assertEqual("OnlyEmbeddedFonts", issue.rule)
-            self.assertEqual("All fonts must be embedded; found non-embedded font.", issue.desc)
 
     def test_rule__output_intent_for_pdfx(self):
         filename = os.path.join(pdf_folder, "pdfx-1a-subsetting.pdf")
@@ -401,6 +285,159 @@ class TestPdfPreflight(unittest.TestCase):
             self.assertEqual("GTS_PDFX OutputIntent not found, assumed to be missing all required keys '['/Info']'.",
                              issue.desc)
 
+    def test_rule__root_has_keys(self):
+        filename = os.path.join(pdf_folder, "72ppi.pdf")
+        with pikepdf.open(filename) as pdf:
+            entries = ["/Type"]
+            issues = rules.RootHasKeys.check(pdf, entries)
+            self.assertEqual(None, issues)
+
+        filename = os.path.join(pdf_folder, "72ppi.pdf")
+        with pikepdf.open(filename) as pdf:
+            entries = ["/OutputIntents"]
+            issues = rules.RootHasKeys.check(pdf, entries)
+            issue = issues[0]
+            self.assertEqual("Metadata", issue.page)
+            self.assertEqual("RootHasKeys", issue.rule)
+            self.assertEqual("Root dict missing required key '/OutputIntents'", issue.desc)
+
+
+######################################################################
+class TestPdfPreflightRulesForPages(unittest.TestCase):
+    def test_rule__box_nesting(self):
+        filename = os.path.join(pdf_folder, "72ppi.pdf")
+        with pikepdf.open(filename) as pdf:
+            issues = rules.BoxNesting.check(pdf)
+            self.assertEqual(None, issues)
+
+        filename = os.path.join(pdf_folder, "bleedbox_larger_than_mediabox.pdf")
+        with pikepdf.open(filename) as pdf:
+            issues = rules.BoxNesting.check(pdf)
+            issue = issues[0]
+            self.assertEqual(1, issue.page)
+            self.assertEqual("BoxNesting", issue.rule)
+            self.assertEqual("BleedBox must be smaller than MediaBox", issue.desc)
+
+    def test_rule__max_ink_density(self):
+        # no cmyk colors specified
+        filename = os.path.join(pdf_folder, "rgb-hexagon.pdf")
+        with pikepdf.open(filename) as pdf:
+            issues = rules.MaxInkDensity.check(pdf, 100)
+            self.assertEqual(None, issues)
+
+        # cmyk ink density in file is at or below threshold
+        filename = os.path.join(pdf_folder, "cmyk.pdf")
+        with pikepdf.open(filename) as pdf:
+            issues = rules.MaxInkDensity.check(pdf, 400)
+            self.assertEqual(None, issues)
+
+        # cmyk ink density in file is above threshold
+        filename = os.path.join(pdf_folder, "cmyk.pdf")
+        with pikepdf.open(filename) as pdf:
+            issues = rules.MaxInkDensity.check(pdf, 240)
+            issue = issues[0]
+            self.assertEqual(5, issue.page)
+            self.assertEqual("MaxInkDensity", issue.rule)
+            self.assertEqual("CMYK ink density too high; must not exceed 240%", issue.desc)
+
+    def test_rule__min_ppi(self):
+        filename = os.path.join(pdf_folder, "300ppi.pdf")
+        with pikepdf.open(filename) as pdf:
+            issues = rules.MinPpi.check(pdf, 300)
+            self.assertEqual(None, issues)
+
+        filename = os.path.join(pdf_folder, "72ppi.pdf")
+        with pikepdf.open(filename) as pdf:
+            issues = rules.MinPpi.check(pdf, 300)
+            issue = issues[0]
+            self.assertEqual(1, issue.page)
+            self.assertEqual("MinPpi", issue.rule)
+            self.assertEqual("Found low-resolution image; images must be at least 300 ppi.", issue.desc)
+
+    def test_rule__no_devicen(self):
+        filename = os.path.join(pdf_folder, "gray.pdf")
+        with pikepdf.open(filename) as pdf:
+            issues = rules.NoDevicen.check(pdf)
+            self.assertEqual(None, issues)
+
+        filename = os.path.join(pdf_folder, "devicen.pdf")
+        with pikepdf.open(filename) as pdf:
+            issues = rules.NoDevicen.check(pdf)
+            issue = issues[0]
+            self.assertEqual(1, issue.page)
+            self.assertEqual("NoDevicen", issue.rule)
+            self.assertEqual("Found DeviceN colorspace (spot color); DeviceN colors are prohibited.",
+                             issue.desc)
+
+    def test_rule__no_indexed_cmyk(self):
+        # pass a file with both indexed and non-indexed colorspaces that are not CMYK
+        filename = os.path.join(pdf_folder, "rgb.pdf")
+        with pikepdf.open(filename) as pdf:
+            issues = rules.NoIndexedCmyk.check(pdf)
+            self.assertEqual(None, issues)
+
+        # fail a file with indexed CMYK, ignoring its non-indexed CMYK colorspaces
+        filename = os.path.join(pdf_folder, "cmyk.pdf")
+        with pikepdf.open(filename) as pdf:
+            issues = rules.NoIndexedCmyk.check(pdf)
+            issue = issues[0]
+            self.assertEqual(7, issue.page)
+            self.assertEqual("NoIndexedCmyk", issue.rule)
+            self.assertEqual("Indexed CMYK colorspaces are prohibited but one or more were found.",
+                             issue.desc)
+
+    def test_rule__no_rgb(self):
+        filename = os.path.join(pdf_folder, "gray.pdf")
+        with pikepdf.open(filename) as pdf:
+            issues = rules.NoRgb.check(pdf)
+            self.assertEqual(None, issues)
+
+        filename = os.path.join(pdf_folder, "rgb.pdf")
+        with pikepdf.open(filename) as pdf:
+            issues = rules.NoRgb.check(pdf)
+            issue = issues[0]
+            self.assertEqual(1, issue.page)
+            self.assertEqual("NoRgb", issue.rule)
+            self.assertEqual("Found RGB colorspace; RGB colors are prohibited.",
+                             issue.desc)
+
+    def test_rule__no_transparency(self):
+        filename = os.path.join(pdf_folder, "gray.pdf")
+        with pikepdf.open(filename) as pdf:
+            issues = rules.NoTransparency.check(pdf)
+            self.assertEqual(None, issues)
+
+        filename = os.path.join(pdf_folder, "transparency.pdf")
+        with pikepdf.open(filename) as pdf:
+            issues = rules.NoTransparency.check(pdf)
+            issue = issues[0]
+            self.assertEqual(1, issue.page)
+            self.assertEqual("NoTransparency", issue.rule)
+            self.assertEqual("Found object with transparency; transparent objects are prohibited.",
+                             issue.desc)
+
+    def test_rule__only_embedded_fonts(self):
+        # pass a file with embedded fonts that don't have subsets
+        filename = os.path.join(pdf_folder, "pdfx-1a-no-subsetting.pdf")
+        with pikepdf.open(filename) as pdf:
+            issues = rules.OnlyEmbeddedFonts.check(pdf)
+            self.assertEqual(None, issues)
+
+        # pass a file with embedded fonts that do have subsets
+        filename = os.path.join(pdf_folder, "pdfx-1a-subsetting.pdf")
+        with pikepdf.open(filename) as pdf:
+            issues = rules.OnlyEmbeddedFonts.check(pdf)
+            self.assertEqual(None, issues)
+
+        # fail a file with a standard font that's not embedded
+        filename = os.path.join(pdf_folder, "standard_14_font.pdf")
+        with pikepdf.open(filename) as pdf:
+            issues = rules.OnlyEmbeddedFonts.check(pdf)
+            issue = issues[0]
+            self.assertEqual(1, issue.page)
+            self.assertEqual("OnlyEmbeddedFonts", issue.rule)
+            self.assertEqual("All fonts must be embedded; found non-embedded font.", issue.desc)
+
     def test_rule__print_boxes(self):
         filename = os.path.join(pdf_folder, "pdfx-1a-subsetting.pdf")
         with pikepdf.open(filename) as pdf:
@@ -428,19 +465,3 @@ class TestPdfPreflight(unittest.TestCase):
             self.assertEqual(1, issue.page)
             self.assertEqual("PrintBoxes", issue.rule)
             self.assertEqual("ArtBox or TrimBox is required, but neither was found; TrimBox is preferred.", issue.desc)
-
-    def test_rule__root_has_keys(self):
-        filename = os.path.join(pdf_folder, "72ppi.pdf")
-        with pikepdf.open(filename) as pdf:
-            entries = ["/Type"]
-            issues = rules.RootHasKeys.check(pdf, entries)
-            self.assertEqual(None, issues)
-
-        filename = os.path.join(pdf_folder, "72ppi.pdf")
-        with pikepdf.open(filename) as pdf:
-            entries = ["/OutputIntents"]
-            issues = rules.RootHasKeys.check(pdf, entries)
-            issue = issues[0]
-            self.assertEqual("Metadata", issue.page)
-            self.assertEqual("RootHasKeys", issue.rule)
-            self.assertEqual("Root dict missing required key '/OutputIntents'", issue.desc)

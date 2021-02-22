@@ -19,28 +19,35 @@ class NoRgb(Rule):
         for i, page in enumerate(pdf.pages):
             page_number = i + 1
 
-            if cls._has_rgb(page):
+            if (cls._has_rgb_in_page_resources(page) or
+                    cls._has_rgb_in_xobjects(page) or
+                    cls._has_rgb_in_content_stream(page)):
                 issues.append(Issue(
                     page=page_number,
                     rule=cls.name,
-                    desc="Found RGB colorspace; RGB objects are prohibited."
+                    desc="Found RGB colorspace; RGB colors are prohibited."
                 ))
 
         if len(issues) != 0:
             return issues
 
     @classmethod
-    def _has_rgb(cls, page):
+    def _has_rgb_in_page_resources(cls, page):
         p = dict(page)
         if "/Resources" in p:
             r = dict(p["/Resources"])
-            # colorspace defined in the page resources
             if "/ColorSpace" in r:
                 cs = dict(r["/ColorSpace"])
                 for k in cs.keys():
                     if k.startswith("/CS"):
                         if cs[k] == "/DeviceRGB" or "/DeviceRGB" in list(cs[k]):
                             return True
+
+    @classmethod
+    def _has_rgb_in_xobjects(cls, page):
+        p = dict(page)
+        if "/Resources" in p:
+            r = dict(p["/Resources"])
             # colorspace defined on the object using it
             if "/XObject" in r:
                 xo = dict(r["/XObject"])
@@ -49,7 +56,8 @@ class NoRgb(Rule):
                     if "/ColorSpace" in v:
                         if v["/ColorSpace"] == "/DeviceRGB":
                             return True
-        # colorspace defined in the content stream
+    @classmethod
+    def _has_rgb_in_content_stream(cls, page):
         for operands, operator in pikepdf.parse_content_stream(page):
             if str(operator) == "RG" or str(operator) == "rg":
                 return True

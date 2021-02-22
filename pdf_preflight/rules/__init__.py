@@ -7,6 +7,7 @@ from .match_info_entries import MatchInfoEntries
 from .max_ink_density import MaxInkDensity
 from .max_version import MaxVersion
 from .min_ppi import MinPpi
+from .no_devicen import NoDevicen
 from .no_filespecs import NoFilespecs
 from .no_indexed_cmyk import NoIndexedCmyk
 from .no_rgb import NoRgb
@@ -27,6 +28,7 @@ __all__ = [
     MaxInkDensity,
     MaxVersion,
     MinPpi,
+    NoDevicen,
     NoFilespecs,
     NoIndexedCmyk,
     NoRgb,

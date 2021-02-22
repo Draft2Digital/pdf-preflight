@@ -36,7 +36,7 @@ class NoIndexedCmyk(Rule):
                                 # so any colorspace that can't be cast to a list isn't what we're looking for
                                 continue
                             else:
-                                if "/Indexed" in list(cs[k]) and "/DeviceCMYK" in li:
+                                if "/Indexed" in li and "/DeviceCMYK" in li:
                                     issues.append(Issue(
                                         page=page_number,
                                         rule=cls.name,
