@@ -219,7 +219,6 @@ class TestPdfPreflightRulesForMetadata(unittest.TestCase):
             self.assertEqual("MaxVersion", issue.rule)
             self.assertEqual("PDF version should be 1.3 or lower.", issue.desc)
 
-    # see if this one can be changed to be a page rule
     def test_rule__no_filespecs(self):
         filename = os.path.join(pdf_folder, "rgb.pdf")
         with pikepdf.open(filename) as pdf:
