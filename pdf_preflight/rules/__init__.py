@@ -9,6 +9,8 @@ from .max_version import MaxVersion
 from .min_ppi import MinPpi
 from .no_devicen import NoDevicen
 from .no_filespecs import NoFilespecs
+from .no_icc_colors import NoIccColors
+from .no_icc_metadata import NoIccMetadata
 from .no_indexed_cmyk import NoIndexedCmyk
 from .no_rgb import NoRgb
 from .no_transparency import NoTransparency
@@ -30,6 +32,8 @@ __all__ = [
     MinPpi,
     NoDevicen,
     NoFilespecs,
+    NoIccColors,
+    NoIccMetadata,
     NoIndexedCmyk,
     NoRgb,
     NoTransparency,

@@ -234,6 +234,23 @@ class TestPdfPreflightRulesForMetadata(unittest.TestCase):
             self.assertEqual("Found one or more filespecs; use of filespecs to reference external files is prohibited.",
                              issue.desc)
 
+    def test_rule__no_icc_metadata(self):
+        # pass a pdf with no ICC anything
+        filename = os.path.join(pdf_folder, "gray.pdf")
+        with pikepdf.open(filename) as pdf:
+            issues = rules.NoIccMetadata.check(pdf)
+            self.assertEqual(None, issues)
+
+        # fail a pdf with an ICC profile in its OutputIntents
+        filename = os.path.join(pdf_folder, "pdfx-1a-subsetting.pdf")
+        with pikepdf.open(filename) as pdf:
+            issues = rules.NoIccMetadata.check(pdf)
+            issue = issues[0]
+            self.assertEqual("Metadata", issue.page)
+            self.assertEqual("NoIccMetadata", issue.rule)
+            self.assertEqual("Found ICC profile in document OutputIntents; ICC profiles are prohibited.",
+                             issue.desc)
+
     def test_rule__output_intent_for_pdfx(self):
         filename = os.path.join(pdf_folder, "pdfx-1a-subsetting.pdf")
         with pikepdf.open(filename) as pdf:
@@ -283,6 +300,10 @@ class TestPdfPreflightRulesForMetadata(unittest.TestCase):
             self.assertEqual("PdfxOutputIntentHasKeys", issue.rule)
             self.assertEqual("GTS_PDFX OutputIntent not found, assumed to be missing all required keys '['/Info']'.",
                              issue.desc)
+
+    def test_rule__page_count(self):
+        # this is the only metadata rule from the Ruby version not yet implemented in this version
+        pass
 
     def test_rule__root_has_keys(self):
         filename = os.path.join(pdf_folder, "72ppi.pdf")
@@ -366,6 +387,23 @@ class TestPdfPreflightRulesForPages(unittest.TestCase):
             self.assertEqual(1, issue.page)
             self.assertEqual("NoDevicen", issue.rule)
             self.assertEqual("Found DeviceN colorspace (spot color); DeviceN colors are prohibited.",
+                             issue.desc)
+
+    def test_rule__no_icc_colors(self):
+        # pass a pdf with no ICC anything
+        filename = os.path.join(pdf_folder, "gray.pdf")
+        with pikepdf.open(filename) as pdf:
+            issues = rules.NoIccColors.check(pdf)
+            self.assertEqual(None, issues)
+
+        # fail a pdf with ICCBased colorspaces
+        filename = os.path.join(pdf_folder, "filespec_to_external_file.pdf")
+        with pikepdf.open(filename) as pdf:
+            issues = rules.NoIccColors.check(pdf)
+            issue = issues[0]
+            self.assertEqual(1, issue.page)
+            self.assertEqual("NoIccColors", issue.rule)
+            self.assertEqual("Found ICCBased colorspace; ICC profiles are prohibited.",
                              issue.desc)
 
     def test_rule__no_indexed_cmyk(self):
